@@ -4,7 +4,8 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import { corsUrl, environment } from './config';
 import { NotFoundError, ApiError, InternalError } from './core/api-error';
-// import routesV1 from './routes/v1';
+import { createServer } from 'http';
+import { Server, Socket } from 'socket.io';
 
 process.on('uncaughtException', (e) => {
   Logger.error(e);
@@ -16,8 +17,15 @@ app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true, parameterLimit: 50000 }));
 app.use(cors({ origin: corsUrl, optionsSuccessStatus: 200 }));
 
-// Routes
-// app.use('/v1', routesV1);
+// Initialize sockets
+const httpServer = createServer(app);
+const io = new Server(httpServer, { transports: ['websocket'] });
+
+io.on('connection', (socket: Socket) => {
+  console.log('hellooooooo');
+  Logger.info(socket.id);
+  socket.emit('message', 'Some thing to show');
+});
 
 // Catch 404 and forward to error handler
 app.use((_req, _res, next) => next(new NotFoundError()));
@@ -35,4 +43,4 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   }
 });
 
-export default app;
+export default httpServer;
