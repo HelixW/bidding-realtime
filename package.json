@@ -14,7 +14,8 @@
     "watch-ts": "tsc -w",
     "eslint": "eslint . --ext .js,.ts",
     "upgrade": "npm update --save-dev && npm update --save",
-    "test": "jest --forceExit --detectOpenHandles --coverage --verbose"
+    "test": "jest --forceExit --detectOpenHandles --coverage --verbose",
+    "format": "prettier --write ."
   },
   "repository": {
     "type": "git",
@@ -30,6 +31,7 @@
     "@types/cors": "^2.8.9",
     "@types/express": "^4.17.9",
     "@types/node": "^14.14.13",
+    "@typescript-eslint/eslint-plugin": "^4.10.0",
     "colors": "^1.4.0",
     "concurrently": "^5.3.0",
     "dotenv": "^8.2.0",
