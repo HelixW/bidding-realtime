@@ -5,10 +5,10 @@ import cors from 'cors';
 import { corsUrl, environment } from './config';
 import { NotFoundError, ApiError, InternalError } from './core/api-error';
 import { createServer } from 'http';
-import { Server, Socket } from 'socket.io';
+import Server, { Socket } from 'socket.io';
 
 process.on('uncaughtException', (e) => {
-  Logger.error(e);
+  Logger.error(e.message);
 });
 
 const app = express();
@@ -19,12 +19,20 @@ app.use(cors({ origin: corsUrl, optionsSuccessStatus: 200 }));
 
 // Initialize sockets
 const httpServer = createServer(app);
-const io = new Server(httpServer, { transports: ['websocket'] });
+const io = new Server(httpServer, {
+  transports: ['websocket'],
+  allowUpgrades: false,
+  pingTimeout: 6000000,
+  pingInterval: 30000,
+});
 
 io.on('connection', (socket: Socket) => {
-  console.log('hellooooooo');
-  Logger.info(socket.id);
-  socket.emit('message', 'Some thing to show');
+  Logger.info(`${socket.id} connected`);
+  socket.emit('message', 'Welcome to Mars');
+
+  socket.on('disconnect', () => {
+    Logger.info(`${socket.id} disconnected`);
+  });
 });
 
 // Catch 404 and forward to error handler
