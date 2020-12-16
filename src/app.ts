@@ -16,11 +16,12 @@ const app = express();
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true, parameterLimit: 50000 }));
 app.use(cors({ origin: corsUrl, optionsSuccessStatus: 200 }));
+app.use(express.static('public'));
 
 // Initialize sockets
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
-  transports: ['websocket'],
+  transports: ['websocket', 'polling'],
   allowUpgrades: false,
   pingTimeout: 6000000,
   pingInterval: 30000,
@@ -28,7 +29,13 @@ const io = new Server(httpServer, {
 
 io.on('connection', (socket: Socket) => {
   Logger.info(`${socket.id} connected`);
-  socket.emit('message', 'Welcome to Mars');
+
+  socket.emit('message', 'Welcome to Pluto (Round 1)');
+
+  socket.on('bid', (bid) => {
+    Logger.info(`${socket.id} made a bid of ${bid}`);
+    socket.emit('update history', `${socket.id} made a bid of ${bid}`);
+  });
 
   socket.on('disconnect', () => {
     Logger.info(`${socket.id} disconnected`);

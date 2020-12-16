@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1"
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"
+      integrity="sha512-v8ng/uGxkge3d1IJuEo6dJP8JViyvms0cly9pnbfRxT6/31c3dRWxIiwGnMSWwZjHKOuY3EVmijs7k1jz/9bLA=="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW"
+      crossorigin="anonymous"
+      defer
+    ></script>
+    <script defer src="./main.js"></script>
+    <title>Dashboard</title>
+  </head>
+  <body style="display: flex; justify-content: center; align-items: center; height: 100vh">
+    <main class="card" style="width: 50%">
+      <div class="card-body">
+        <h1 class="display-4 text-center">Question 1</h1>
+        <article class="row row-cols-2 mx-2">
+          <div class="card">
+            <main class="card-body">
+              <h2>Input</h2>
+              <div class="bg-light p-2">
+                <div>5</div>
+                <div>Apple</div>
+              </div>
+            </main>
+          </div>
+          <div class="card">
+            <main class="card-body">
+              <h2>Output</h2>
+              <div class="bg-light p-2">
+                <div>Apple</div>
+                <div>Apple</div>
+                <div>Apple</div>
+                <div>Apple</div>
+                <div>Apple</div>
+              </div>
+            </main>
+          </div>
+        </article>
+        <div class="input-group mb-3 mt-4" style="width: 50%; float: right; margin-right: 0.5rem">
+          <input
+            type="number"
+            class="form-control"
+            placeholder="Your bid"
+            aria-label="Your bid"
+            aria-describedby="button-addon1"
+          />
+          <button class="btn btn-outline-secondary" type="button" id="button-addon1">
+            Place Bid
+          </button>
+        </div>
+      </div>
+      <footer class="card-body bg-primary text-white">
+        <span>Received:</span> <span class="incoming">...</span>
+      </footer>
+    </main>
+  </body>
+</html>
