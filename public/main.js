@@ -24,6 +24,7 @@ socket.on('minimum', (val) => {
 });
 
 document.querySelector('button').onclick = () => {
-  const value = document.querySelector('input').value;
-  socket.emit('bid', { questionID: 'something', bid: value });
+  const qID = document.querySelector('.bid-questionID').value;
+  const value = document.querySelector('.bid-input').value;
+  socket.emit('bid', { questionID: qID.toString(), bid: value });
 };

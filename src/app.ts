@@ -3,12 +3,13 @@ import express, { Request, Response, NextFunction } from 'express';
 import { corsUrl, environment } from './config';
 import { ServiceAccount } from 'firebase-admin';
 import Server, { Socket } from 'socket.io';
-import { History } from './types';
 import * as admin from 'firebase-admin';
 import bodyParser from 'body-parser';
 import { createServer } from 'http';
 import Logger from './core/logger';
+import { History, Question } from './types';
 import cors from 'cors';
+import * as got from 'got';
 
 process.on('uncaughtException', (e) => {
   Logger.error(e.message);
@@ -43,11 +44,32 @@ const io = new Server(httpServer, {
 });
 
 let currentBid = 0;
-const history: Array<History> = [];
-const currQuestion = '';
+let history: Array<History> = [];
+let currQuestion = '';
+let roundDetails;
+let questions: Array<Question> = [];
+let minBid = 0;
 
-const changeRound = () => {
-  console.log('hello');
+(async () => {
+  roundDetails = await got.get('https://bidding-portal.appspot.com/api/bidding', {
+    json: true,
+  });
+  questions = roundDetails.body.questions;
+  currentBid = roundDetails.body.minBid;
+  currQuestion = roundDetails.body.questions[0].id;
+})();
+
+const changeQuestion = (socket: Socket, id: string) => {
+  const response = questions.filter((item: Question) => item.id === id);
+  if (response.length === 0) {
+    Logger.error('Incorrect questionID supplied');
+    socket.emit('message', 'Incorrect questionID supplied');
+  } else {
+    history = [];
+    currentBid = minBid;
+    currQuestion = id;
+    io.emit('history', { error: false, history: [] });
+  }
 };
 
 io.on('connection', async (socket: Socket) => {
@@ -56,14 +78,17 @@ io.on('connection', async (socket: Socket) => {
   docRef.onSnapshot((doc) => {
     socket.emit('message', `Welcome to ${doc.data()?.name}`);
     io.emit('minimum', doc.data()?.minBid);
-    io.emit('history', { error: false, history: [] });
-    currentBid = doc.data()?.minBid;
+    io.emit('history', { error: false, history: history });
+    minBid = doc.data()?.minBid;
   });
 
   socket.on('bid', (data) => {
+    if (data.questionID !== currQuestion) changeQuestion(socket, data.questionID);
     if (data.bid > currentBid) {
-      Logger.info(`${socket.id} made a bid of ${data.bid}`);
       currentBid = data.bid;
+      Logger.info(`${socket.id} made a bid of ${data.bid} (current bid: ${currentBid})`);
+
+      // Push to history
       history.push({ id: socket.id, bid: data.bid });
       io.emit('history', { error: false, history });
     } else {
