@@ -1,11 +1,13 @@
-import express, { Request, Response, NextFunction } from 'express';
-import Logger from './core/logger';
-import bodyParser from 'body-parser';
-import cors from 'cors';
-import { corsUrl, environment } from './config';
 import { NotFoundError, ApiError, InternalError } from './core/api-error';
-import { createServer } from 'http';
+import express, { Request, Response, NextFunction } from 'express';
+import { corsUrl, environment } from './config';
+import { ServiceAccount } from 'firebase-admin';
 import Server, { Socket } from 'socket.io';
+import * as admin from 'firebase-admin';
+import bodyParser from 'body-parser';
+import { createServer } from 'http';
+import Logger from './core/logger';
+import cors from 'cors';
 
 process.on('uncaughtException', (e) => {
   Logger.error(e.message);
@@ -18,6 +20,17 @@ app.use(bodyParser.urlencoded({ limit: '10mb', extended: true, parameterLimit: 5
 app.use(cors({ origin: corsUrl, optionsSuccessStatus: 200 }));
 app.use(express.static('public'));
 
+// Initialize firebase
+const adminConfig: ServiceAccount = {
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+};
+admin.initializeApp({
+  credential: admin.credential.cert(adminConfig),
+  databaseURL: 'https://bidding-portal.firebaseio.com',
+});
+
 // Initialize sockets
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
@@ -29,12 +42,27 @@ const io = new Server(httpServer, {
 
 io.on('connection', (socket: Socket) => {
   Logger.info(`${socket.id} connected`);
+  let currentBid = 0;
 
-  socket.emit('message', 'Welcome to Pluto (Round 1)');
+  // Database connection
+  admin
+    .firestore()
+    .collection('bidding')
+    .doc('details')
+    .onSnapshot((doc) => {
+      socket.emit('message', `Welcome to ${doc.data()?.name}`);
+    });
 
   socket.on('bid', (bid) => {
-    Logger.info(`${socket.id} made a bid of ${bid}`);
-    socket.emit('update history', `${socket.id} made a bid of ${bid}`);
+    console.log(currentBid);
+    if (bid > currentBid) {
+      Logger.info(`${socket.id} made a bid of ${bid}`);
+      currentBid = bid;
+      io.emit('update history', `${socket.id} made a bid of ${bid}`);
+    } else {
+      Logger.info(`${socket.id} made a smaller bid too small`);
+      io.emit('update history', `${socket.id} made a smaller bid too small`);
+    }
   });
 
   socket.on('disconnect', () => {
