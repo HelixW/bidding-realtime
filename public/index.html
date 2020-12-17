@@ -23,8 +23,8 @@
     <script defer src="./main.js"></script>
     <title>Dashboard</title>
   </head>
-  <body style="display: flex; justify-content: center; align-items: center; height: 100vh">
-    <main class="card" style="width: 50%">
+  <body style="display: flex; justify-content: center; align-items: flex-start; margin-top: 7rem">
+    <article class="card" style="width: 45%">
       <div class="card-body">
         <h1 class="display-4 text-center">Question 1</h1>
         <article class="row row-cols-2 mx-2">
@@ -62,10 +62,19 @@
             Place Bid
           </button>
         </div>
+        <div class="text-center">Minimum bid for this round is <span class="min-bid">0</span></div>
       </div>
       <footer class="card-body bg-primary text-white">
-        <span>Received:</span> <span class="incoming">...</span>
+        <span>Information:</span> <span class="incoming">Loading...</span>
       </footer>
-    </main>
+    </article>
+    <article class="card" style="width: 45%; margin-left: 1rem">
+      <main class="card-body">
+        <h1 class="display-4 text-center">Bid History</h1>
+        <ul class="list-group">
+          <li class="list-group-item">Loading...</li>
+        </ul>
+      </main>
+    </article>
   </body>
 </html>

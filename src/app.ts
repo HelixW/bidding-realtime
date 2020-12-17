@@ -3,6 +3,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import { corsUrl, environment } from './config';
 import { ServiceAccount } from 'firebase-admin';
 import Server, { Socket } from 'socket.io';
+import { History } from './types';
 import * as admin from 'firebase-admin';
 import bodyParser from 'body-parser';
 import { createServer } from 'http';
@@ -30,6 +31,7 @@ admin.initializeApp({
   credential: admin.credential.cert(adminConfig),
   databaseURL: 'https://bidding-portal.firebaseio.com',
 });
+const docRef = admin.firestore().collection('bidding').doc('details');
 
 // Initialize sockets
 const httpServer = createServer(app);
@@ -40,28 +42,33 @@ const io = new Server(httpServer, {
   pingInterval: 30000,
 });
 
-io.on('connection', (socket: Socket) => {
+let currentBid = 0;
+const history: Array<History> = [];
+const currQuestion = '';
+
+const changeRound = () => {
+  console.log('hello');
+};
+
+io.on('connection', async (socket: Socket) => {
   Logger.info(`${socket.id} connected`);
-  let currentBid = 0;
 
-  // Database connection
-  admin
-    .firestore()
-    .collection('bidding')
-    .doc('details')
-    .onSnapshot((doc) => {
-      socket.emit('message', `Welcome to ${doc.data()?.name}`);
-    });
+  docRef.onSnapshot((doc) => {
+    socket.emit('message', `Welcome to ${doc.data()?.name}`);
+    io.emit('minimum', doc.data()?.minBid);
+    io.emit('history', { error: false, history: [] });
+    currentBid = doc.data()?.minBid;
+  });
 
-  socket.on('bid', (bid) => {
-    console.log(currentBid);
-    if (bid > currentBid) {
-      Logger.info(`${socket.id} made a bid of ${bid}`);
-      currentBid = bid;
-      io.emit('update history', `${socket.id} made a bid of ${bid}`);
+  socket.on('bid', (data) => {
+    if (data.bid > currentBid) {
+      Logger.info(`${socket.id} made a bid of ${data.bid}`);
+      currentBid = data.bid;
+      history.push({ id: socket.id, bid: data.bid });
+      io.emit('history', { error: false, history });
     } else {
-      Logger.info(`${socket.id} made a smaller bid too small`);
-      io.emit('update history', `${socket.id} made a smaller bid too small`);
+      Logger.info(`${socket.id} made a bid too small`);
+      socket.emit('history', { error: true, history });
     }
   });
 
