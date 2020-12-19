@@ -126,6 +126,9 @@ io.on('connection', async (socket: Socket) => {
     /** Check for a greater bid value */
     if (data.bid > currentBid) {
       currentBid = data.bid;
+      if(data.bid % 5 != 0) {
+        socket.emit('invalid', { type: 'minimum', message: 'The bid you placed was too small' });
+      }
       Logger.info(`${socket.id} made a bid of ${data.bid} (current bid: ${currentBid})`);
 
       /** Push bid to bid-history */
