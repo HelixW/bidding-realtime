@@ -71,7 +71,7 @@ const changeQuestion = async (socket: Socket, id: string) => {
   const response = questions.filter((item: Question) => item.id === id);
   if (response.length === 0) {
     Logger.error(`Incorrect questionID supplied by ${socket.id}`);
-    socket.emit('invalid', { type: 'invalid', message: 'Invalid questionID supplied' });
+    socket.emit('invalid', { type: 'questionID', message: 'Invalid questionID supplied' });
   } else {
     history = [];
     currentBid = minBid;
@@ -173,7 +173,7 @@ io.on('connection', async (socket: Socket) => {
     } else {
       /** Bid made was smaller than current bid */
       Logger.info(`${socket.id} made a bid too small`);
-      socket.emit('invalid', { type: 'minimum', message: 'The bid you placed was too small' });
+      socket.emit('invalid', { type: 'current', message: 'The bid you placed was too small' });
     }
   });
 
