@@ -125,8 +125,6 @@ io.on('connection', async (socket: Socket) => {
 
     /** Check for a greater bid value */
     if (data.bid > currentBid) {
-      currentBid = data.bid;
-
       /** Check for denomination */
       if (data.bid % 5 != 0) {
         socket.emit('invalid', {
@@ -136,6 +134,9 @@ io.on('connection', async (socket: Socket) => {
         Logger.info(`The bid was not divisible by 5`);
         return;
       }
+
+      /** Successful bid */
+      currentBid = data.bid;
       Logger.info(`${socket.id} made a bid of ${data.bid} (current bid: ${currentBid})`);
 
       /** Push bid to bid-history */
