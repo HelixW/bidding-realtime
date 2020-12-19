@@ -129,6 +129,7 @@ io.on('connection', async (socket: Socket) => {
       if(data.bid % 5 != 0) {
         socket.emit('invalid', { type: 'minimum', message: 'The bid you placed was too small' });
         Logger.info(`The bid was not divisible by 5`);
+        return;
       }
       Logger.info(`${socket.id} made a bid of ${data.bid} (current bid: ${currentBid})`);
 
