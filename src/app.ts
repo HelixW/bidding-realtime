@@ -7,9 +7,10 @@ import Server, { Socket } from 'socket.io';
 import * as admin from 'firebase-admin';
 import bodyParser from 'body-parser';
 import { createServer } from 'http';
+import { sign } from 'jsonwebtoken';
 import Logger from './core/logger';
-import cors from 'cors';
 import * as got from 'got';
+import cors from 'cors';
 
 process.on('uncaughtException', (e) => {
   Logger.error(e.message);
@@ -66,7 +67,7 @@ const initiateRound = async () => {
 };
 
 /** Trigger after question expiry */
-const changeQuestion = (socket: Socket, id: string) => {
+const changeQuestion = async (socket: Socket, id: string) => {
   const response = questions.filter((item: Question) => item.id === id);
   if (response.length === 0) {
     Logger.error(`Incorrect questionID supplied by ${socket.id}`);
@@ -76,6 +77,30 @@ const changeQuestion = (socket: Socket, id: string) => {
     currentBid = minBid;
     currQuestion = id;
     io.emit('history', history);
+    // Allocation route
+
+    const token: string = sign(
+      { email: process.env.PRIVILEDGED_EMAIL, googleID: null },
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      process.env.JWT_SECRET!,
+      {
+        expiresIn: '7d',
+      },
+    );
+
+    /** Allocate question */
+    let response;
+    try {
+      response = await got.put(`https://bidding-portal.appspot.com/api/bidding/allocate/${id}`, {
+        json: true,
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch (err) {
+      Logger.error(
+        `${socket.id} ran the allocate function when the question was already allocated`,
+      );
+    }
+    if (response) Logger.info(`Question ${id} allocated`);
   }
 };
 
@@ -128,8 +153,8 @@ io.on('connection', async (socket: Socket) => {
       /** Check for denomination */
       if (data.bid % 5 != 0) {
         socket.emit('invalid', {
-          type: 'minimum',
-          message: 'The bid you placed was not divisible by 5',
+          type: 'denomination',
+          message: 'Please bid in denominations of 5',
         });
         Logger.info(`The bid was not divisible by 5`);
         return;
