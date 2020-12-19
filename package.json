@@ -14,7 +14,6 @@
     "watch-ts": "tsc -w",
     "eslint": "eslint . --ext .js,.ts",
     "upgrade": "npm update --save-dev && npm update --save",
-    "test": "jest --forceExit --detectOpenHandles --coverage --verbose",
     "format": "prettier --write ."
   },
   "repository": {
@@ -55,6 +54,7 @@
     "helmet": "^4.2.0",
     "jsonwebtoken": "^8.5.1",
     "socket.io": "^2.3.0",
+    "socketio-jwt": "^4.6.2",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.0"
   }

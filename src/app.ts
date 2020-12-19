@@ -4,6 +4,7 @@ import { corsUrl, environment } from './config';
 import { ServiceAccount } from 'firebase-admin';
 import { History, Question } from './types';
 import Server, { Socket } from 'socket.io';
+import * as socketioJwt from 'socketio-jwt';
 import * as admin from 'firebase-admin';
 import bodyParser from 'body-parser';
 import { createServer } from 'http';
@@ -111,7 +112,14 @@ const changeQuestion = async (socket: Socket, id: string, nextIndex: number) => 
 docRef.onSnapshot(() => initiateRound());
 
 /** Individual client logic */
-io.on('connection', async (socket: Socket) => {
+io.on(
+  'connection',
+  socketioJwt.authorize({
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    secret: process.env.JWT_AUTH_SECRET!,
+    timeout: 15000,
+  }),
+).on('authenticated', async (socket: Socket) => {
   Logger.info(`${socket.id} connected`);
 
   docRef.onSnapshot((doc) => {
