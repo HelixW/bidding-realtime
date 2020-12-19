@@ -4,23 +4,35 @@ socket.on('message', (bid) => {
   document.querySelector('.incoming').innerHTML = bid;
 });
 
-socket.on('history', (res) => {
-  // Bid placed below previous or minimum
-  if (res.error) document.querySelector('.incoming').innerHTML = 'The bid you placed was too small';
+socket.on('minimum', (value) => {
+  document.querySelector('.min-bid').innerHTML = value;
+});
 
-  // Update history
+socket.on('history', (history) => {
   const listGroup = document.querySelector('.list-group');
   listGroup.innerHTML = '';
-  res.history.reverse().forEach((item) => {
+  history.reverse().forEach((item) => {
     const listItem = document.createElement('li');
     listItem.className = 'list-group-item';
-    listItem.innerHTML = `User '${item.id.substr(1, 4)}' bid ${item.bid}`;
+    listItem.innerHTML = `User '${item.id.substr(0, 4)}' bid ${item.bid}`;
     listGroup.appendChild(listItem);
   });
 });
 
-socket.on('minimum', (val) => {
-  document.querySelector('.min-bid').innerHTML = val;
+socket.on('invalid', (err) => {
+  const element = document.querySelector('.alerts');
+  element.innerHTML = err.message;
+
+  const container = document.querySelector('#alert-container');
+  container.classList = 'card-body bg-danger text-white';
+});
+
+socket.on('alert', (message) => {
+  const element = document.querySelector('.alerts');
+  element.innerHTML = message;
+
+  const container = document.querySelector('#alert-container');
+  container.classList = 'card-body bg-success text-white';
 });
 
 document.querySelector('button').onclick = () => {
