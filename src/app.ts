@@ -48,7 +48,7 @@ const io = new Server(httpServer, {
 let currentBid = 0;
 let history: Array<History> = [];
 let currQuestion = '';
-let roundDetails;
+let roundDetails: any;
 let questions: Array<Question> = [];
 let minBid = 0;
 
@@ -95,6 +95,13 @@ io.on('connection', async (socket: Socket) => {
 
   /** Bid event */
   socket.on('bid', (data) => {
+    /** Check for active service */
+    if (!roundDetails.body.service) {
+      Logger.error(`${socket.id} tried to bid while the service was disabled`);
+      socket.emit('invalid', { type: 'down', message: 'Bidding has been disabled' });
+      return;
+    }
+
     /** New incoming questionID triggers allocation */
     if (data.questionID !== currQuestion) changeQuestion(socket, data.questionID);
 
@@ -102,8 +109,18 @@ io.on('connection', async (socket: Socket) => {
     const response = questions.filter((item: Question) => item.id === data.questionID);
     if (response.length === 0) {
       Logger.error(`Incorrect questionID supplied by ${socket.id}`);
-      socket.emit('invalid', { type: 'invalid', message: 'Invalid questionID supplied' });
+      socket.emit('invalid', { type: 'questionID', message: 'Invalid questionID supplied' });
       return;
+    } else {
+      /** Check if question is already allocated */
+      if (response[0].allocated) {
+        Logger.error(`${socket.id} tried to bid for an allocated question`);
+        socket.emit('invalid', {
+          type: 'allocated',
+          message: 'Question has already been allocated',
+        });
+        return;
+      }
     }
 
     /** Check for a greater bid value */
