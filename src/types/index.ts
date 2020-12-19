@@ -1,7 +1,6 @@
 export interface Round {
   name: string;
   questions: Array<Question>;
-  minBid: number;
   service: boolean;
 }
 
@@ -9,6 +8,7 @@ export interface Question {
   id: string;
   expiry: number;
   start: number;
+  minBid: number;
   allocated: boolean;
 }
 

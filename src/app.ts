@@ -59,21 +59,24 @@ const initiateRound = async () => {
     json: true,
   });
   questions = roundDetails.body.questions;
-  minBid = roundDetails.body.minBid;
+
+  /** Setting current question and minimum bid */
   currQuestion = roundDetails.body.questions[0].id;
+  minBid = roundDetails.body.questions[0].minBid;
 
   /** Setting first bid limit to minimum bid from round details */
   currentBid = minBid;
 };
 
 /** Trigger after question expiry */
-const changeQuestion = async (socket: Socket, id: string) => {
+const changeQuestion = async (socket: Socket, id: string, nextIndex: number) => {
   const response = questions.filter((item: Question) => item.id === id);
   if (response.length === 0) {
     Logger.error(`Incorrect questionID supplied by ${socket.id}`);
     socket.emit('invalid', { type: 'questionID', message: 'Invalid questionID supplied' });
   } else {
     history = [];
+    minBid = questions[nextIndex].minBid;
     currentBid = minBid;
     currQuestion = id;
     io.emit('history', history);
@@ -114,7 +117,7 @@ io.on('connection', async (socket: Socket) => {
   docRef.onSnapshot((doc) => {
     /** Forward round data to client */
     socket.emit('message', `Welcome to ${doc.data()?.name}`);
-    socket.emit('minimum', doc.data()?.minBid);
+    socket.emit('minimum', minBid);
     io.emit('history', history);
   });
 
@@ -128,7 +131,8 @@ io.on('connection', async (socket: Socket) => {
     }
 
     /** New incoming questionID triggers allocation */
-    if (data.questionID !== currQuestion) changeQuestion(socket, data.questionID);
+    const nextIndex = questions.findIndex((question) => question.id === data.questionID);
+    if (data.questionID !== currQuestion) changeQuestion(socket, data.questionID, nextIndex);
 
     /** Check for question validity */
     const response = questions.filter((item: Question) => item.id === data.questionID);
@@ -173,7 +177,11 @@ io.on('connection', async (socket: Socket) => {
     } else {
       /** Bid made was smaller than current bid */
       Logger.info(`${socket.id} made a bid too small`);
-      socket.emit('invalid', { type: 'current', message: 'The bid you placed was too small' });
+      socket.emit('invalid', {
+        type: 'current',
+        message: 'The bid you placed was too small',
+        yourBid: data.bid,
+      });
     }
   });
 
