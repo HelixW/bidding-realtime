@@ -12,6 +12,7 @@ import { sign, decode } from 'jsonwebtoken';
 import Logger from './core/logger';
 import * as got from 'got';
 import cors from 'cors';
+import Axios from 'axios';
 
 process.on('uncaughtException', (e) => {
   Logger.error(e.message);
@@ -70,7 +71,7 @@ const initiateRound = async () => {
 };
 
 /** Trigger after question expiry */
-const changeQuestion = async (socket: Socket, id: string, nextIndex: number) => {
+const changeQuestion = async (socket: Socket, id: string, nextIndex: number, teamID: string) => {
   const response = questions.filter((item: Question) => item.id === id);
   if (response.length === 0) {
     Logger.error(`Incorrect questionID supplied by ${socket.id}`);
@@ -92,18 +93,33 @@ const changeQuestion = async (socket: Socket, id: string, nextIndex: number) => 
     );
 
     /** Allocate question */
-    let response;
+    console.log(typeof id, typeof teamID);
     try {
-      response = await got.put(`https://bidding-portal.appspot.com/api/bidding/allocate/${id}`, {
-        json: true,
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await Axios.put(
+        `http://localhost:8000/api/bidding/allocate`,
+        { id, teamID: teamID.toString() },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      // {
+      //   id,
+      //   teamID,
+      // },
+      // { headers: },
+
+      // const res = await got.put('http://localhost:8000/api​/bidding​/allocate​', {
+      //   json: ,
+      //   headers: ,
+      //   responseType: 'json',
+      // });
+      if (res) Logger.info(`Question ${id} allocated`);
     } catch (err) {
+      console.log(err.message);
       Logger.error(
         `${socket.id} ran the allocate function when the question was already allocated`,
       );
     }
-    if (response) Logger.info(`Question ${id} allocated`);
   }
 };
 
@@ -133,7 +149,6 @@ io.on(
     /** Auth layer */
     const decodedToken = decode(data.token, { json: true });
     try {
-      console.log(decodedToken?.team?.id);
       await got.get(`https://bidding-portal.appspot.com/api/teams/${decodedToken?.team?.id}`);
     } catch (err) {
       Logger.error(`${socket.id} bid while being unauthorized`);
@@ -150,7 +165,8 @@ io.on(
 
     /** New incoming questionID triggers allocation */
     const nextIndex = questions.findIndex((question) => question.id === data.questionID);
-    if (data.questionID !== currQuestion) changeQuestion(socket, data.questionID, nextIndex);
+    if (data.questionID !== currQuestion)
+      changeQuestion(socket, currQuestion, nextIndex, decodedToken?.team?.id);
 
     /** Check for question validity */
     const response = questions.filter((item: Question) => item.id === data.questionID);
