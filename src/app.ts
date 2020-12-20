@@ -2,7 +2,7 @@ import { NotFoundError, ApiError, InternalError } from './core/api-error';
 import express, { Request, Response, NextFunction } from 'express';
 import { corsUrl, environment } from './config';
 import { ServiceAccount } from 'firebase-admin';
-import { History, Question } from './types';
+import { History, Question, Team } from './types';
 import Server, { Socket } from 'socket.io';
 import * as socketioJwt from 'socketio-jwt';
 import * as admin from 'firebase-admin';
@@ -93,26 +93,18 @@ const changeQuestion = async (socket: Socket, id: string, nextIndex: number, tea
     );
 
     /** Allocate question */
-    console.log(typeof id, typeof teamID);
+    const prevIndex = questions.findIndex((question) => currQuestion === question.id);
+    const prevQuestion = questions[prevIndex - 1];
+    console.log(prevQuestion);
     try {
       const res = await Axios.put(
         `http://localhost:8000/api/bidding/allocate`,
-        { id, teamID: teamID.toString() },
+        { id: prevQuestion.id.toString(), teamID: teamID.toString() },
         {
           headers: { Authorization: `Bearer ${token}` },
         },
       );
-      // {
-      //   id,
-      //   teamID,
-      // },
-      // { headers: },
 
-      // const res = await got.put('http://localhost:8000/api​/bidding​/allocate​', {
-      //   json: ,
-      //   headers: ,
-      //   responseType: 'json',
-      // });
       if (res) Logger.info(`Question ${id} allocated`);
     } catch (err) {
       console.log(err.message);
@@ -120,6 +112,7 @@ const changeQuestion = async (socket: Socket, id: string, nextIndex: number, tea
         `${socket.id} ran the allocate function when the question was already allocated`,
       );
     }
+    // console.log(currQuestion);
   }
 };
 
@@ -163,10 +156,19 @@ io.on(
       return;
     }
 
+    /** Check for limit of 2 */
+    const team = (await (
+      await admin.firestore().collection('teams').doc(decodedToken?.team?.id.toString()).get()
+    ).data()) as Team;
+    if (team.questions.length === 2) {
+      socket.emit('invalid', { type: 'max', message: 'Max limit for allocated questions reached' });
+      return;
+    }
+
     /** New incoming questionID triggers allocation */
     const nextIndex = questions.findIndex((question) => question.id === data.questionID);
     if (data.questionID !== currQuestion)
-      changeQuestion(socket, currQuestion, nextIndex, decodedToken?.team?.id);
+      changeQuestion(socket, data.questionID, nextIndex, decodedToken?.team?.id);
 
     /** Check for question validity */
     const response = questions.filter((item: Question) => item.id === data.questionID);
