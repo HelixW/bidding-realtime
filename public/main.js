@@ -1,4 +1,4 @@
-const token = window.prompt('Enter auth token');
+const token = window.prompt('Enter authorization token');
 
 const socket = io('ws://localhost:8080');
 
@@ -22,7 +22,7 @@ socket.on('connect', () => {
         history.reverse().forEach((item) => {
           const listItem = document.createElement('li');
           listItem.className = 'list-group-item';
-          listItem.innerHTML = `User '${item.id.substr(0, 4)}' bid ${item.bid}`;
+          listItem.innerHTML = `Team '${item.id}' bid ${item.bid}`;
           listGroup.appendChild(listItem);
         });
       });
@@ -46,7 +46,7 @@ socket.on('connect', () => {
       document.querySelector('button').onclick = () => {
         const qID = document.querySelector('.bid-questionID').value;
         const value = document.querySelector('.bid-input').value;
-        socket.emit('bid', { questionID: qID.toString(), bid: value });
+        socket.emit('bid', { questionID: qID.toString(), bid: value, token });
       };
     })
     .on('unauthorized', (msg) => {

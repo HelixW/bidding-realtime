@@ -8,7 +8,7 @@ import * as socketioJwt from 'socketio-jwt';
 import * as admin from 'firebase-admin';
 import bodyParser from 'body-parser';
 import { createServer } from 'http';
-import { sign } from 'jsonwebtoken';
+import { sign, decode } from 'jsonwebtoken';
 import Logger from './core/logger';
 import * as got from 'got';
 import cors from 'cors';
@@ -81,7 +81,6 @@ const changeQuestion = async (socket: Socket, id: string, nextIndex: number) => 
     currentBid = minBid;
     currQuestion = id;
     io.emit('history', history);
-    // Allocation route
 
     const token: string = sign(
       { email: process.env.PRIVILEDGED_EMAIL, googleID: null },
@@ -130,7 +129,18 @@ io.on(
   });
 
   /** Bid event */
-  socket.on('bid', (data) => {
+  socket.on('bid', async (data) => {
+    /** Auth layer */
+    const decodedToken = decode(data.token, { json: true });
+    try {
+      console.log(decodedToken?.team?.id);
+      await got.get(`https://bidding-portal.appspot.com/api/teams/${decodedToken?.team?.id}`);
+    } catch (err) {
+      Logger.error(`${socket.id} bid while being unauthorized`);
+      socket.emit('invalid', { type: 'unauthorized', message: 'Unauthorized access detected' });
+      return;
+    }
+
     /** Check for active service */
     if (!roundDetails.body.service) {
       Logger.error(`${socket.id} tried to bid while the service was disabled`);
@@ -177,7 +187,7 @@ io.on(
       Logger.info(`${socket.id} made a bid of ${data.bid} (current bid: ${currentBid})`);
 
       /** Push bid to bid-history */
-      history.push({ id: socket.id, bid: data.bid });
+      history.push({ id: decodedToken?.team?.id, bid: data.bid });
 
       /** Send successful response to all clients */
       io.emit('history', history);
