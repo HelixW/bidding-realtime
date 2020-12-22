@@ -22,5 +22,4 @@ coverage
 
 # Environment varibles
 *.env
-*.env.*
 app.yaml
