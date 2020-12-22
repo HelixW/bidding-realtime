@@ -3,7 +3,7 @@
 [![Dependencies][dependencies-shield]][dependencies-url]
 [![Issues][issues-shield]][issues-url]
 [![Size][size-shield]][size-url]
-[![License][license-shield]][license-url]
+<!-- [![License][license-shield]][license-url] -->
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
 <!-- PROJECT LOGO -->
@@ -132,7 +132,7 @@ Project Link - [https://github.com/HelixW/bidding-realtime](https://github.com/H
 [issues-url]: https://github.com/HelixW/bidding-realtime/issues
 [size-shield]: https://img.shields.io/github/repo-size/helixw/bidding-realtime?style=for-the-badge
 [size-url]: https://github.com/helixw/bidding-realtime
-[license-shield]: https://img.shields.io/github/license/helixw/bidding-realtime?style=for-the-badge
-[license-url]: https://github.com/HelixW/bidding-realtime/blob/master/LICENSE
+<!-- [license-shield]: https://img.shields.io/github/license/helixw/bidding-realtime?style=for-the-badge
+[license-url]: https://github.com/HelixW/bidding-realtime/blob/master/LICENSE -->
 [linkedin-shield]: https://img.shields.io/badge/Linkedin-View_Profile-blue?style=for-the-badge&logo=linkedin
 [linkedin-url]: https://www.linkedin.com/in/shreyas-k-0aa77018b
