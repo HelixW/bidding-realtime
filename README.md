@@ -3,8 +3,8 @@
 [![Dependencies][dependencies-shield]][dependencies-url]
 [![Issues][issues-shield]][issues-url]
 [![Size][size-shield]][size-url]
-<!-- [![License][license-shield]][license-url] -->
 [![LinkedIn][linkedin-shield]][linkedin-url]
+[![License][license-shield]][license-url]
 
 <!-- PROJECT LOGO -->
 <br />
@@ -126,13 +126,13 @@ Project Link - [https://github.com/HelixW/bidding-realtime](https://github.com/H
 
 <!-- LINKS & IMAGES -->
 
-[dependencies-shield]: https://img.shields.io/david/helixw/bidding-realtime?style=for-the-badge
+[dependencies-shield]: https://img.shields.io/david/HelixW/bidding-realtime?style=for-the-badge
 [dependencies-url]: https://github.com/HelixW/bidding-realtime/blob/master/package.json
-[issues-shield]: https://img.shields.io/github/issues-raw/helixw/bidding-realtime?style=for-the-badge
+[issues-shield]: https://img.shields.io/github/issues-raw/HelixW/bidding-realtime?style=for-the-badge
 [issues-url]: https://github.com/HelixW/bidding-realtime/issues
 [size-shield]: https://img.shields.io/github/repo-size/helixw/bidding-realtime?style=for-the-badge
 [size-url]: https://github.com/helixw/bidding-realtime
-<!-- [license-shield]: https://img.shields.io/github/license/helixw/bidding-realtime?style=for-the-badge
-[license-url]: https://github.com/HelixW/bidding-realtime/blob/master/LICENSE -->
+[license-shield]: https://img.shields.io/github/license/HelixW/bidding-realtime?style=for-the-badge
+[license-url]: https://github.com/HelixW/bidding-realtime/blob/master/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/Linkedin-View_Profile-blue?style=for-the-badge&logo=linkedin
 [linkedin-url]: https://www.linkedin.com/in/shreyas-k-0aa77018b
