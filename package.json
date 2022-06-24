@@ -51,7 +51,7 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "firebase-admin": "^9.4.2",
-    "got": "^9.6.0",
+    "got": "^11.8.5",
     "helmet": "^4.2.0",
     "jsonwebtoken": "^8.5.1",
     "socket.io": "^2.4.0",
